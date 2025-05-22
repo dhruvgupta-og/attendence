@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>College Attendance Tracker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      min-height: 100vh;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      transition: background-color 0.4s, color 0.4s;
+    }
+    body.dark {
+      background: linear-gradient(135deg, #252525, #121212);
+      color: #dcdcdc;
+    }
+    header {
+      background: rgba(24, 40, 72, 0.85);
+      width: 100%;
+      padding: 1.2rem 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      user-select: none;
+      transition: background-color 0.4s;
+    }
+    body.dark header {
+      background: rgba(12, 12, 12, 0.9);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.85);
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 700;
+      font-size: 2.2rem;
+      letter-spacing: 1.2px;
+      text-shadow: 0 3px 7px rgba(0,0,0,0.4);
+    }
+    body.dark header h1 {
+      text-shadow: 0 2px 5px rgba(255,255,255,0.15);
+    }
+    header p {
+      margin-top: 0.3rem;
+      font-weight: 500;
+      font-size: 1.1rem;
+      color: #d0d0f0;
+      letter-spacing: 0.6px;
+    }
+    body.dark header p {
+      color: #aaa;
+    }
+
+    main {
+      flex: 1;
+      max-width: 700px;
+      width: 95%;
+      margin: 2rem 0 3rem;
+      background: #fefefe;
+      border-radius: 15px;
+      color: #333;
+      padding: 2.5rem 2.5rem 3rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      transition: background-color 0.4s, color 0.4s;
+      position: relative;
+      min-height: 60vh;
+      justify-content: center;
+    }
+    body.dark main {
+      background: #222;
+      color: #eee;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+    }
+
+    /* Login container */
+    #loginContainer {
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      margin: auto;
+      gap: 1.5rem;
+    }
+    #loginContainer h2 {
+      text-align: center;
+      margin: 0 0 1rem 0;
+      font-weight: 700;
+      font-size: 2rem;
+      color: #6a52f1;
+    }
+    #loginContainer label {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+      display: inline-block;
+      color: #444;
+    }
+    body.dark #loginContainer label {
+      color: #ccc;
+    }
+    #loginContainer input[type="text"] {
+      padding: 0.6rem 0.9rem;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      border: 2px solid #6a52f1;
+      outline: none;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    #loginContainer input[type="text"]:focus {
+      border-color: #512bd6;
+      background-color: #eef0ff;
+    }
+    body.dark #loginContainer input[type="text"]:focus {
+      background-color: #474168;
+      border-color: #a381f7;
+      color: #fafbff;
+    }
+    #loginContainer button {
+      margin-top: 1rem;
+      padding: 0.8rem 1.4rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 25px;
+      border: none;
+      background: #6a52f1;
+      color: white;
+      box-shadow: 0 6px 18px rgba(106, 82, 241, 0.75);
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.15s ease;
+      user-select: none;
+    }
+    #loginContainer button:hover {
+      background: #512bd6;
+      box-shadow: 0 8px 24px rgba(81, 43, 214, 0.9);
+      transform: scale(1.05);
+    }
+    #loginContainer button:active {
+      transform: scale(0.95);
+    }
+    #loginContainer .error {
+      color: #bf2121;
+      font-weight: 700;
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    /* Attendance UI hidden when not logged in */
+    #attendanceUI {
+      display: none;
+      flex-direction: column;
+    }
+    #attendanceUI.active {
+      display: flex;
+    }
+    
+    /* Other UI elements reuse previous styles */
+    .date-navigation {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.3rem;
+      margin-bottom: 2rem;
+      user-select: none;
+    }
+    button.nav-btn {
+      background: #6a52f1;
+      border: none;
+      color: white;
+      padding: 0.55rem 1.1rem;
+      font-weight: 700;
+      font-size: 1.25rem;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(106, 82, 241, 0.65);
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    button.nav-btn:hover {
+      background: #5138d6;
+      transform: scale(1.07);
+    }
+    button.nav-btn:active {
+      transform: scale(0.98);
+    }
+    body.dark button.nav-btn {
+      background: #8565fb;
+      box-shadow: 0 5px 15px rgba(133, 101, 251, 0.7);
+    }
+    body.dark button.nav-btn:hover {
+      background: #6e53fa;
+      box-shadow: 0 5px 15px rgba(110, 83, 250, 0.9);
+    }
+    .date-display {
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: #4b4b63;
+      letter-spacing: 1px;
+      user-select: text;
+      min-width: 170px;
+      text-align: center;
+      transition: color 0.4s;
+    }
+    body.dark .date-display {
+      color: #bbb;
+    }
+
+    .classes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 1.2rem 1.6rem;
+      user-select: none;
+    }
+    .class-card {
+      background: #e3e8ff;
+      border-radius: 15px;
+      padding: 1.7rem 1rem;
+      box-shadow: inset 0 0 8px rgba(47, 67, 166, 0.25);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      cursor: pointer;
+      position: relative;
+      transition:
+        background-color 0.35s cubic-bezier(.25,.8,.25,1),
+        box-shadow 0.35s cubic-bezier(.25,.8,.25,1),
+        color 0.35s cubic-bezier(.25,.8,.25,1);
+      user-select: none;
+    }
+    body.dark .class-card {
+      background: #3a3a4d;
+      box-shadow: inset 0 0 12px rgba(105, 105, 190, 0.35);
+      color: #dcdcdc;
+    }
+    .class-card:hover {
+      background: #ccd6ff;
+      box-shadow: 0 8px 20px rgba(47, 67, 166, 0.35);
+      color: #2e3992;
+    }
+    body.dark .class-card:hover {
+      background: #575778;
+      box-shadow: 0 8px 20px rgba(144, 144, 233, 0.5);
+      color: #e4e4ff;
+    }
+    .class-card.attended {
+      background: #6a52f1;
+      color: white;
+      box-shadow: 0 15px 38px rgba(106, 82, 241, 0.7);
+      cursor: default;
+    }
+    body.dark .class-card.attended {
+      background: #a381f7;
+      box-shadow: 0 15px 38px rgba(163, 129, 247, 0.75);
+      color: #222;
+    }
+    .class-card.attended:hover {
+      background: #512bd6;
+      color: #eee;
+      box-shadow: 0 18px 50px rgba(81, 43, 214, 0.85);
+    }
+    body.dark .class-card.attended:hover {
+      background: #7a56f9;
+      color: #111;
+      box-shadow: 0 20px 60px rgba(122, 86, 249, 0.9);
+    }
+
+    .class-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin-bottom: 0.8rem;
+      user-select: none;
+      outline: none;
+      cursor: text;
+      min-height: 1.4em;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .class-title[contenteditable]:focus {
+      outline: 2px solid #6a52f1;
+      border-radius: 5px;
+      background-color: #eef0ff;
+      color: #2e3992;
+      transition: background-color 0.4s;
+      white-space: normal;
+      overflow: visible;
+    }
+    body.dark .class-title[contenteditable]:focus {
+      background-color: #524fa3;
+      color: #fbfaff;
+    }
+
+    .attend-btn {
+      background: transparent;
+      border: 2.5px solid #6a52f1;
+      color: #6a52f1;
+      padding: 0.5rem 1rem;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition:
+        background-color 0.3s ease,
+        color 0.3s ease,
+        transform 0.1s ease;
+      cursor: pointer;
+      width: 110px;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .attend-btn:hover:not(.attended) {
+      background-color: #6a52f1;
+      color: white;
+      transform: scale(1.1);
+    }
+    .attend-btn:active:not(.attended) {
+      transform: scale(0.95);
+    }
+
+    .attend-btn.attended {
+      background: #fff;
+      color: #6a52f1;
+      border-color: #fff;
+      cursor: default;
+      pointer-events: none;
+      gap: 6px;
+    }
+
+    .attend-btn svg {
+      fill: currentColor;
+      width: 20px;
+      height: 20px;
+    }
+
+    .summary {
+      margin-top: 2.8rem;
+      padding-top: 1.5rem;
+      border-top: 1.6px solid #c8cae9;
+      text-align: center;
+      user-select: none;
+    }
+    body.dark .summary {
+      border-top-color: #55557f;
+    }
+    .summary h2 {
+      font-weight: 700;
+      color: #4b4b63;
+      margin-bottom: 0.9rem;
+      font-size: 1.5rem;
+    }
+    body.dark .summary h2 {
+      color: #b8a9ff;
+    }
+    .summary p {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0.15rem 0;
+      letter-spacing: 0.7px;
+    }
+
+    .percentage-ring {
+      margin: 1rem auto 0;
+      width: 120px;
+      height: 120px;
+      position: relative;
+      user-select: none;
+      margin-bottom: 18px;
+    }
+    .percentage-ring svg {
+      transform: rotate(-90deg);
+    }
+    .percentage-ring circle {
+      fill: none;
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke 0.4s ease;
+    }
+    .percentage-ring .bg {
+      stroke: #eee;
+    }
+    body.dark .percentage-ring .bg {
+      stroke: #555577;
+    }
+    .percentage-ring .progress {
+      stroke: #6a52f1;
+      transition: stroke-dashoffset 0.8s ease;
+    }
+    .percentage-ring .percent-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-weight: 800;
+      font-size: 2.5rem;
+      color: #6a52f1;
+      pointer-events: none;
+      user-select: none;
+      transition: color 0.4s;
+    }
+    body.dark .percentage-ring .percent-text {
+      color: #b8a9ff;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #d0d0f0;
+      background: rgba(24,40,72,0.85);
+      width: 100%;
+      user-select: none;
+      transition: background-color 0.4s, color 0.4s;
+    }
+    body.dark footer {
+      background: rgba(12,12,12,0.9);
+      color: #9999cc;
+    }
+
+    /* Tooltip container */
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    /* Tooltip text */
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: max-content;
+      max-width: 220px;
+      background-color: #181f3ddd;
+      color: #f0f0f0;
+      text-align: center;
+      border-radius: 6px;
+      padding: 6px 9px;
+      position: absolute;
+      z-index: 100;
+      bottom: 130%; /* Position above */
+      left: 50%;
+      margin-left: -110px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      font-weight: 600;
+      font-size: 0.9rem;
+      user-select: none;
+      word-wrap: break-word;
+    }
+    /* Show tooltip text when hovering */
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(24,40,72,0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 9999;
+      user-select:none;
+    }
+    .modal.visible {
+      visibility: visible;
+      opacity: 1;
+    }
+    .modal-content {
+      background: white;
+      color: #222;
+      border-radius: 15px;
+      max-width: 500px;
+      padding: 2rem 2.5rem;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      text-align: center;
+      user-select: text;
+      position: relative;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      font-weight: 700;
+      color: #6a52f1;
+      font-size: 1.8rem;
+      letter-spacing: 1px;
+      user-select: text;
+    }
+    .modal-content p {
+      font-size: 1rem;
+      line-height: 1.4;
+      color: #444;
+      margin-top: 1rem;
+      letter-spacing: 0.4px;
+      user-select: text;
+      white-space: pre-line;
+    }
+    .modal-close-btn {
+      margin-top: 2rem;
+      background: #6a52f1;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.8rem;
+      font-weight: 600;
+      font-size: 1rem;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(106, 82, 241, 0.75);
+      user-select: none;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .modal-close-btn:hover {
+      background: #512bd6;
+      transform: scale(1.05);
+    }
+    .modal-close-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Scrollbar for modal */
+    .modal-content::-webkit-scrollbar {
+      width: 8px;
+    }
+    .modal-content::-webkit-scrollbar-thumb {
+      background-color: #6a52f1;
+      border-radius: 4px;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 480px){
+      main {
+        margin: 1rem 1rem 2rem;
+        padding: 1.7rem 1.2rem 2.5rem;
+      }
+      .classes {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.9rem 1rem;
+      }
+      .date-display {
+        font-size: 1.1rem;
+        min-width: 140px;
+      }
+      button.nav-btn {
+        padding: 0.45rem 1rem;
+        font-size: 1rem;
+      }
+      .attend-btn {
+        width: 95px;
+        font-size: 0.9rem;
+      }
+      .btn-group {
+        flex-direction: column;
+        gap: 0.7rem;
+      }
+      .reset-day,
+      .reset-all,
+      .export-btn,
+      .import-btn,
+      .darkmode-toggle,
+      .info-btn {
+        width: 100%;
+        justify-content: center;
+      }
+      #loginContainer {
+        max-width: 100%;
+        margin: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>College Attendance Tracker</h1>
+    <p>Your daily attendance, easy and fast!</p>
+  </header>
+  <main>
+    <!-- Login/Signup UI -->
+    <section id="loginContainer" role="form" aria-label="Login or Signup form" tabindex="0">
+      <h2>Login / Signup</h2>
+      <label for="branchInput">Branch:</label>
+      <input type="text" id="branchInput" placeholder="Enter your branch (e.g. CS)" aria-required="true" autocomplete="off" />
+      <label for="rollInput">Roll Number:</label>
+      <input type="text" id="rollInput" placeholder="Enter your roll number" aria-required="true" autocomplete="off" />
+      <div class="error" id="loginError" aria-live="assertive"></div>
+      <button id="loginBtn">Login / Signup</button>
+    </section>
+    
+    <!-- Main Attendance UI (hidden until login) -->
+    <section id="attendanceUI" aria-live="polite" aria-atomic="true" tabindex="0" aria-label="Attendance tracking user interface" >
+      <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+        <button id="logoutBtn" style="background:#e05f5f; border:none; border-radius:12px; padding:0.5rem 1rem; font-weight:700; cursor:pointer; color:#fff; box-shadow:0 5px 15px rgba(224,95,95,0.8); user-select:none;">Logout</button>
+      </div>
+      <div class="date-navigation" role="region" aria-label="Day navigation">
+        <button id="prevDayBtn" class="nav-btn tooltip" aria-label="Previous Day">&lt;<span class="tooltiptext">Previous Day (←)</span></button>
+        <div id="dateDisplay" class="date-display" tabindex="0"></div>
+        <button id="nextDayBtn" class="nav-btn tooltip" aria-label="Next Day">&gt;<span class="tooltiptext">Next Day (→)</span></button>
+      </div>
+      <div id="classesContainer" class="classes" role="list" aria-label="List of classes for attendance">
+        <!-- Class cards dynamically added -->
+      </div>
+      <div class="btn-group" role="region" aria-label="Attendance options">
+        <button id="resetDayBtn" class="reset-day tooltip" aria-label="Reset attendance for this day">Reset Day<span class="tooltiptext">Clear attendance data of current day</span></button>
+        <button id="resetAllBtn" class="reset-all tooltip" aria-label="Reset all attendance data">Reset All Data<span class="tooltiptext">Clear all attendance data completely</span></button>
+        <button id="exportBtn" class="export-btn tooltip" aria-label="Export attendance data">Export CSV<span class="tooltiptext">Download attendance data as CSV file</span></button>
+        <button id="importBtn" class="import-btn tooltip" aria-label="Import attendance data">Import CSV<span class="tooltiptext">Upload CSV file to import attendance data</span></button>
+        <button id="darkmodeToggle" class="darkmode-toggle tooltip" aria-label="Toggle dark mode">Dark Mode<span class="tooltiptext">Toggle dark/light theme</span></button>
+        <button id="infoBtn" class="info-btn tooltip" aria-label="Show instructions">Help<span class="tooltiptext">How to use this app</span></button>
+      </div>
+      <div class="summary">
+        <h2>Attendance Summary</h2>
+        <p>Total Classes Attended: <strong id="totalAttended">0</strong> / <strong id="totalClasses">0</strong></p>
+        <p>Total Days Recorded: <strong id="totalDays">0</strong></p>
+        <p>Average Attendance per Day: <strong id="avgAttendance">0%</strong></p>
+        <p>Detailed Attendance per Class:</p>
+        <ul id="perClassStats" style="list-style:none;padding-left:0; max-width:100%; margin:0 auto 0;"></ul>
+        <div class="percentage-ring" aria-label="Overall attendance percentage">
+          <svg width="120" height="120" viewBox="0 0 120 120" role="img" aria-hidden="true" focusable="false">
+            <circle class="bg" r="52" cx="60" cy="60" />
+            <circle class="progress" r="52" cx="60" cy="60" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+          </svg>
+          <div class="percent-text" id="attendancePercent">0%</div>
+        </div>
+      </div>
+      <input type="file" id="importFileInput" accept=".csv,text/csv" aria-hidden="true" tabindex="-1"/>
+    </section>
+
+    <!-- Modal for help/info -->
+    <div id="infoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc" tabindex="-1">
+      <div class="modal-content">
+        <h3 id="modalTitle">How to Use</h3>
+        <p id="modalDesc">
+• Login or Signup with your Branch and Roll Number.<br>
+• Select the date with the &lt; and &gt; buttons or arrow keys.<br>
+• Click a class to mark attendance for that class on the selected day.<br>
+• Attended classes turn purple with a check mark.<br>
+• Class names are editable and saved automatically.<br>
+• Use "Reset Day" to clear attendance for the selected day.<br>
+• Use "Reset All Data" to erase all attendance records.<br>
+• Export your attendance data as a CSV file.<br>
+• Import attendance data from a CSV file (same format).<br>
+• Toggle dark mode for a comfortable viewing theme.<br>
+• Your data is saved securely in your browser per your login.<br>
+• Keyboard shortcuts: ◀️ Previous Day, ▶️ Next Day, ? Show Help.<br>
+• Use Logout button to switch user.
+        </p>
+        <button id="modalCloseBtn" class="modal-close-btn">Got it!</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2024 College Attendance Tracker
+  </footer>
+
+  <script>
+    (function(){
+      const NUM_CLASSES_PER_DAY = 6;
+      const STORAGE_ATTENDANCE_KEY_PREFIX = 'college_attendance_data_';
+      const STORAGE_CLASSNAMES_KEY_PREFIX = 'college_attendance_classnames_';
+      const STORAGE_DARKMODE_KEY = 'college_attendance_darkmode';
+      const STORAGE_CURRENT_USER = 'college_attendance_current_user';
+
+      // Elements
+      const loginContainer = document.getElementById('loginContainer');
+      const attendanceUI = document.getElementById('attendanceUI');
+      const branchInput = document.getElementById('branchInput');
+      const rollInput = document.getElementById('rollInput');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginError = document.getElementById('loginError');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      const classesContainer = document.getElementById('classesContainer');
+      const dateDisplay = document.getElementById('dateDisplay');
+      const prevDayBtn = document.getElementById('prevDayBtn');
+      const nextDayBtn = document.getElementById('nextDayBtn');
+      const resetDayBtn = document.getElementById('resetDayBtn');
+      const resetAllBtn = document.getElementById('resetAllBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const importBtn = document.getElementById('importBtn');
+      const darkmodeToggle = document.getElementById('darkmodeToggle');
+      const infoBtn = document.getElementById('infoBtn');
+      const infoModal = document.getElementById('infoModal');
+      const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const totalAttendedSpan = document.getElementById('totalAttended');
+      const totalClassesSpan = document.getElementById('totalClasses');
+      const totalDaysSpan = document.getElementById('totalDays');
+      const avgAttendanceSpan = document.getElementById('avgAttendance');
+      const perClassStatsUL = document.getElementById('perClassStats');
+      const attendancePercentText = document.getElementById('attendancePercent');
+      const progressCircle = document.querySelector('.percentage-ring .progress');
+      const importFileInput = document.getElementById('importFileInput');
+
+      let currentDate = new Date();
+      currentDate.setHours(0,0,0,0);
+
+      let currentUser = null; // {branch, rollNo}
+
+      // Compose storage keys by user
+      function attendanceKey() {
+        return STORAGE_ATTENDANCE_KEY_PREFIX + currentUserKey();
+      }
+      function classNamesKey() {
+        return STORAGE_CLASSNAMES_KEY_PREFIX + currentUserKey();
+      }
+      function currentUserKey() {
+        return currentUser.branch.toUpperCase() + '_' + currentUser.rollNo.toUpperCase();
+      }
+
+      // Load/save attendance per user
+      function loadAttendanceData(){
+        const raw = localStorage.getItem(attendanceKey());
+        if(!raw) return {};
+        try { return JSON.parse(raw);}catch{return {};}
+      }
+      function saveAttendanceData(data){
+        localStorage.setItem(attendanceKey(), JSON.stringify(data));
+      }
+
+      // Load/save class names per user
+      function loadClassNames(){
+        const raw = localStorage.getItem(classNamesKey());
+        if(!raw){
+          return Array(NUM_CLASSES_PER_DAY).fill().map((_,i)=>`Class ${i+1}`);
+        }
+        try {
+          let arr = JSON.parse(raw);
+          if(Array.isArray(arr) && arr.length === NUM_CLASSES_PER_DAY){
+            return arr;
+          }
+          return Array(NUM_CLASSES_PER_DAY).fill().map((_,i)=>`Class ${i+1}`);
+        }catch{
+          return Array(NUM_CLASSES_PER_DAY).fill().map((_,i)=>`Class ${i+1}`);
+        }
+      }
+      function saveClassNames(arr){
+        localStorage.setItem(classNamesKey(), JSON.stringify(arr));
+      }
+
+      // Load/save dark mode (common for all)
+      function loadDarkMode(){
+        return localStorage.getItem(STORAGE_DARKMODE_KEY) === 'true';
+      }
+      function saveDarkMode(value){
+        localStorage.setItem(STORAGE_DARKMODE_KEY, value ? 'true' : 'false');
+      }
+
+      // Format date yyyy-mm-dd
+      function formatDate(date){
+        return date.toISOString().split('T')[0];
+      }
+
+      // UI switching
+      function showLoginUI(){
+        loginContainer.style.display = 'flex';
+        attendanceUI.classList.remove('active');
+        branchInput.focus();
+      }
+      function showAttendanceUI(){
+        loginContainer.style.display = 'none';
+        attendanceUI.classList.add('active');
+        render();
+      }
+
+      // Try restoring logged in user from localStorage
+      function loadSessionUser(){
+        const raw = localStorage.getItem(STORAGE_CURRENT_USER);
+        if(!raw) return null;
+        try {
+          const user = JSON.parse(raw);
+          if(user && user.branch && user.rollNo){
+            return user;
+          }
+          return null;
+        }catch{
+          return null;
+        }
+      }
+      function saveSessionUser(user){
+        localStorage.setItem(STORAGE_CURRENT_USER, JSON.stringify(user));
+      }
+      function clearSessionUser(){
+        localStorage.removeItem(STORAGE_CURRENT_USER);
+      }
+
+      // Login validation
+      function validateLogin(branch, rollNo){
+        if(!branch.trim()) return 'Branch cannot be empty.';
+        if(!rollNo.trim()) return 'Roll number cannot be empty.';
+        if(!/^[A-Za-z0-9]+$/.test(rollNo.trim())){
+          return 'Roll number should be alphanumeric without spaces.';
+        }
+        return '';
+      }
+
+      // Login/signup event
+      loginBtn.addEventListener('click', () => {
+        loginError.textContent = '';
+        const branchVal = branchInput.value.trim();
+        const rollVal = rollInput.value.trim();
+        const err = validateLogin(branchVal, rollVal);
+        if(err){
+          loginError.textContent = err;
+          return;
+        }
+        currentUser = {branch: branchVal.toUpperCase(), rollNo: rollVal.toUpperCase()};
+        saveSessionUser(currentUser);
+        branchInput.value = '';
+        rollInput.value = '';
+        showAttendanceUI();
+      });
+
+      // Logout event
+      logoutBtn.addEventListener('click', () => {
+        currentUser = null;
+        clearSessionUser();
+        showLoginUI();
+      });
+
+      // Attendance UI functions and render
+
+      function createCheckIcon() {
+        return '<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 8 6.5 12 13 4"></polyline></svg>';
+      }
+
+      function render(){
+        dateDisplay.textContent = currentDate.toDateString();
+        const attendanceData = loadAttendanceData();
+        const classNames = loadClassNames();
+
+        const dateStr = formatDate(currentDate);
+        let dayAttendance = attendanceData[dateStr] || new Array(NUM_CLASSES_PER_DAY).fill(false);
+
+        classesContainer.innerHTML = '';
+
+        for(let i=0; i<NUM_CLASSES_PER_DAY; i++){
+          const classCard = document.createElement('div');
+          classCard.className = 'class-card' + (dayAttendance[i] ? ' attended' : '');
+          classCard.setAttribute('data-class-index', i);
+          classCard.setAttribute('tabindex', '0');
+          classCard.setAttribute('role', 'button');
+          classCard.setAttribute('aria-pressed', dayAttendance[i]);
+          classCard.setAttribute('aria-label', `${dayAttendance[i] ? 'Attended' : 'Not attended'} ${classNames[i]} on ${dateDisplay.textContent}`);
+
+          const title = document.createElement('div');
+          title.className = 'class-title';
+          title.contentEditable = true;
+          title.spellcheck = false;
+          title.setAttribute('aria-label', `Edit name for ${classNames[i]}`);
+          title.textContent = classNames[i];
+          title.addEventListener('blur', () => {
+            let newName = title.textContent.trim();
+            if(newName === '') newName = `Class ${i + 1}`;
+            const currentNames = loadClassNames();
+            currentNames[i] = newName;
+            saveClassNames(currentNames);
+            render();
+          });
+          title.addEventListener('keydown', e => {
+            if(e.key === 'Enter'){
+              e.preventDefault();
+              title.blur();
+            }
+          });
+
+          const button = document.createElement('button');
+          button.className = 'attend-btn' + (dayAttendance[i] ? ' attended' : '');
+          button.innerHTML = dayAttendance[i]
+            ? `Attended ${createCheckIcon()}`
+            : 'Mark Present';
+          button.disabled = dayAttendance[i];
+          button.title = dayAttendance[i] ? `${classNames[i]} attended` : `Mark attendance for ${classNames[i]}`;
+          button.setAttribute('aria-label', button.title);
+          button.setAttribute('tabindex', dayAttendance[i] ? '-1' : '0');
+          button.addEventListener('click', e => {
+            e.stopPropagation();
+            if(!dayAttendance[i]) markAttendance(i);
+          });
+
+          classCard.addEventListener('click', () => {
+            if(!dayAttendance[i]) markAttendance(i);
+          });
+          classCard.addEventListener('keydown', e => {
+            if(e.key === 'Enter' || e.key === ' '){
+              e.preventDefault();
+              if(!dayAttendance[i]) markAttendance(i);
+            }
+          });
+
+          classCard.appendChild(title);
+          classCard.appendChild(button);
+          classesContainer.appendChild(classCard);
+        }
+
+        updateSummary();
+      }
+
+      function markAttendance(classIndex){
+        const attendanceData = loadAttendanceData();
+        const dateStr = formatDate(currentDate);
+        if(!attendanceData[dateStr]){
+          attendanceData[dateStr] = new Array(NUM_CLASSES_PER_DAY).fill(false);
+        }
+        attendanceData[dateStr][classIndex] = true;
+        saveAttendanceData(attendanceData);
+        animateAttendance(classIndex);
+        render();
+      }
+
+      function animateAttendance(classIndex){
+        const card = classesContainer.querySelector(`.class-card[data-class-index="${classIndex}"]`);
+        if(!card) return;
+        card.style.transition = 'transform 0.3s ease';
+        card.style.transform = 'scale(1.1)';
+        setTimeout(() => card.style.transform = 'scale(1)', 300);
+      }
+
+      function changeDate(offset){
+        currentDate.setDate(currentDate.getDate() + offset);
+        render();
+      }
+
+      function updateSummary(){
+        const attendanceData = loadAttendanceData();
+        const classNames = loadClassNames();
+
+        let totalClasses = 0;
+        let totalAttended = 0;
+        let totalDays = 0;
+        let perClassCount = new Array(NUM_CLASSES_PER_DAY).fill(0);
+
+        for(const day in attendanceData){
+          if(Array.isArray(attendanceData[day])){
+            totalDays++;
+            totalClasses += NUM_CLASSES_PER_DAY;
+            for(let i=0; i<NUM_CLASSES_PER_DAY; i++){
+              if(attendanceData[day][i]){
+                totalAttended++;
+                perClassCount[i]++;
+              }
+            }
+          }
+        }
+
+        totalClassesSpan.textContent = totalClasses;
+        totalAttendedSpan.textContent = totalAttended;
+        totalDaysSpan.textContent = totalDays;
+
+        const avgPercent = totalDays === 0 ? 0 : Math.round((totalAttended / totalClasses) * 100);
+        avgAttendanceSpan.textContent = avgPercent + '%';
+
+        attendancePercentText.textContent = avgPercent + '%';
+
+        // Update progress ring
+        const radius = 52;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (circumference * avgPercent / 100);
+        progressCircle.style.strokeDasharray = circumference;
+        progressCircle.style.strokeDashoffset = offset;
+
+        // Update per class stats list
+        perClassStatsUL.innerHTML = '';
+        if(totalDays === 0){
+          perClassStatsUL.innerHTML = '<li>No attendance data yet.</li>';
+          return;
+        }
+        for(let i=0; i<NUM_CLASSES_PER_DAY; i++){
+          const li = document.createElement('li');
+          const percent = Math.round((perClassCount[i]/totalDays)*100);
+          li.textContent = `${classNames[i]}: Attended on ${perClassCount[i]} day${perClassCount[i] !== 1 ? 's' : ''} (${percent}%)`;
+          perClassStatsUL.appendChild(li);
+        }
+      }
+
+      // Reset day attendance
+      function resetCurrentDayAttendance(){
+        let attendanceData = loadAttendanceData();
+        const dateStr = formatDate(currentDate);
+        if(!attendanceData[dateStr]){
+          alert(`No attendance data for ${currentDate.toDateString()}`);
+          return;
+        }
+        if(confirm(`Are you sure you want to reset attendance for ${currentDate.toDateString()}? This action cannot be undone.`)){
+          delete attendanceData[dateStr];
+          saveAttendanceData(attendanceData);
+          render();
+        }
+      }
+
+      // Reset all attendance data for user
+      function resetAllAttendance(){
+        if(confirm('Are you sure you want to reset ALL attendance data for your account? This will erase all your saved records.')){
+          localStorage.removeItem(attendanceKey());
+          render();
+        }
+      }
+
+      // Export attendance to CSV
+      function exportToCSV(){
+        const attendanceData = loadAttendanceData();
+        const classNames = loadClassNames();
+
+        const header = ['Date', ...classNames];
+        const dataRows = [];
+        const dates = Object.keys(attendanceData).sort();
+
+        dates.forEach(dateStr => {
+          const dayArr = attendanceData[dateStr];
+          if(!Array.isArray(dayArr)) return;
+          const row = [dateStr];
+          for(let i=0; i<NUM_CLASSES_PER_DAY; i++){
+            row.push(dayArr[i] ? '1' : '0');
+          }
+          dataRows.push(row);
+        });
+        let csvContent = [];
+        csvContent.push(header.join(','));
+        dataRows.forEach(row => csvContent.push(row.join(',')));
+        const csvString = csvContent.join('\n');
+
+        const blob = new Blob([csvString], {type: 'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentUserKey()+'_attendance.csv';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }, 100);
+      }
+
+      // Import attendance from CSV
+      function importFromCSV(file){
+        const reader = new FileReader();
+        reader.onload = event => {
+          const text = event.target.result;
+          try{
+            processCSVImport(text);
+          } catch(e) {
+            alert('Import failed: ' + e.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      // Process CSV content for import
+      function processCSVImport(csvText){
+        const lines = csvText.trim().split(/\r?\n/);
+        if(lines.length < 2) throw new Error('CSV is empty or missing data rows.');
+        const header = lines[0].split(',').map(h=>h.trim());
+        if(header.length !== NUM_CLASSES_PER_DAY + 1) throw new Error(`CSV header must have date + ${NUM_CLASSES_PER_DAY} class columns.`);
+
+        // Update class names
+        const newClassNames = header.slice(1);
+        if(newClassNames.some(name => name === '')){
+          throw new Error('Class names in CSV header cannot be empty.');
+        }
+        // Validate rows & parse
+        let newData = {};
+        for(let i=1; i<lines.length; i++){
+          const row = lines[i].split(',').map(v=>v.trim());
+          if(row.length !== NUM_CLASSES_PER_DAY + 1) {
+            alert(`Skipping invalid row ${i+1}: Incorrect column length.`);
+            continue;
+          }
+          const dateStr = row[0];
+          if(!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)){
+            alert(`Skipping invalid row ${i+1}: Invalid date format.`);
+            continue;
+          }
+          let attendanceArr = new Array(NUM_CLASSES_PER_DAY).fill(false);
+          for(let j=0; j<NUM_CLASSES_PER_DAY; j++){
+            attendanceArr[j] = (row[j+1] === '1');
+          }
+          newData[dateStr] = attendanceArr;
+        }
+        // Save class names and merge attendance data
+        saveClassNames(newClassNames);
+        let attendanceData = loadAttendanceData();
+        Object.assign(attendanceData, newData);
+        saveAttendanceData(attendanceData);
+        alert('CSV imported successfully!');
+        render();
+      }
+
+      // Keyboard shortcuts
+      function handleKeyDown(event){
+        if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName) || document.activeElement.isContentEditable) return;
+        if(event.key === "ArrowLeft"){
+          event.preventDefault();
+          changeDate(-1);
+        } else if(event.key === "ArrowRight"){
+          event.preventDefault();
+          changeDate(1);
+        } else if(event.key === '?'){
+          event.preventDefault();
+          showModal();
+        }
+      }
+
+      function showModal(){
+        infoModal.classList.add('visible');
+        infoModal.focus();
+      }
+      function hideModal(){
+        infoModal.classList.remove('visible');
+      }
+
+      modalCloseBtn.addEventListener('click', hideModal);
+      infoModal.addEventListener('click', e=>{
+        if(e.target === infoModal) hideModal();
+      });
+      document.addEventListener('keydown', e=>{
+        if(e.key === 'Escape' && infoModal.classList.contains('visible')){
+          hideModal();
+        }
+      });
+
+      prevDayBtn.addEventListener('click', () => changeDate(-1));
+      nextDayBtn.addEventListener('click', () => changeDate(1));
+      resetDayBtn.addEventListener('click', resetCurrentDayAttendance);
+      resetAllBtn.addEventListener('click', resetAllAttendance);
+      exportBtn.addEventListener('click', exportToCSV);
+      importBtn.addEventListener('click', () => importFileInput.click());
+      importFileInput.addEventListener('change', e => {
+        if(e.target.files.length > 0){
+          importFromCSV(e.target.files[0]);
+          e.target.value = '';
+        }
+      });
+      darkmodeToggle.addEventListener('click', () => {
+        const darkOn = document.body.classList.toggle('dark');
+        saveDarkMode(darkOn);
+      });
+      infoBtn.addEventListener('click', showModal);
+      document.addEventListener('keydown', handleKeyDown);
+
+      // On load, check dark mode preference
+      if(loadDarkMode()) {
+        document.body.classList.add('dark');
+      }
+
+      // On load, check if user signed in
+      function startApp(){
+        const user = loadSessionUser();
+        if(user){
+          currentUser = user;
+          showAttendanceUI();
+        } else {
+          showLoginUI();
+        }
+      }
+
+      startApp();
+
+    })();
+  </script>
+</body>
+</html>
+
